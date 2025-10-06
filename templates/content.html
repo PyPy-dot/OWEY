@@ -1,0 +1,6 @@
+{% load static %}
+<ul class="dir-list">
+    {% for dir in environment %}
+        <li><a href="{{ dir.get_absolute_url }}"><img src="{% static 'images/icons-folder.png' %}" alt="{{ dir.name }}" title="{{ dir.name }}">{{ dir.name }}</a></li>
+    {% endfor %}
+</ul>

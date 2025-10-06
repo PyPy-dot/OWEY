@@ -1,0 +1,123 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0 auto;
+    font-family: Roboto, sans-serif;
+    min-height: 560px;
+    display: flex;
+    height: 100vh;
+}
+
+.left-sidebar {
+    width: 50px;
+    background-color: #333;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    max-height: 932px;
+}
+
+.left-sidebar .main-menu-button {
+    width: 40px;
+    height: 40px;
+    background-color: #555;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    transition: background-color 0.3s;
+    list-style-type: none;
+}
+.main-menu {
+    padding-left: 0;
+}
+.left-sidebar .main-menu-button:first-child {
+    margin-top: 20px;
+}
+.left-sidebar .main-menu-button:hover {
+    background-color: #777;
+}
+.row {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+.main-panel {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+header {
+    width: 100%;
+    background-color: #f1f1f1;
+    padding: 15px;
+    border-bottom: 1px solid #ccc;
+}
+header ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    margin: 0;
+}
+header li {
+    flex-direction: row;
+    padding-right: 5px;
+}
+header a {
+    text-decoration: none;
+}
+.content {
+    width: 79.5%;
+    overflow: auto;
+    padding: 15px;
+    display: flex;
+    min-height: 829px;
+    align-content: space-between;
+}
+.content .first-container {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    align-content: space-between;
+    align-items: stretch;
+}
+.content .second-container {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    align-content: space-between;
+    align-items: stretch;
+}
+footer {
+    width: 100%;
+    background-color: #f1f1f1;
+    padding-left: 15px;
+    padding-right:  15px;;
+    border-top: 1px solid #ccc;
+}
+
+.right-sidebar {
+    position: absolute;
+    width: 20%;
+    background-color: #ddd;
+    padding: 20px;
+    overflow-y: auto;
+    right: 0;
+    top: 49px;
+    min-height: 831px;
+}
+
+.dir-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+.dir-list li {
+    padding: 20px;
+}
+.dir-list a {
+    display: grid;
+    text-decoration: none;
+    place-items: center;
+}

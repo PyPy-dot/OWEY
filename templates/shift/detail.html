@@ -1,0 +1,577 @@
+{% extends 'base.html' %}
+{% load data_tags %}
+{% load static %}
+{% block content %}
+    <div class="first-container">
+        <div>Все смены / <a href="https://admin-external.smena.yandex-team.ru/shifts/{{ data.shift_id }}/info">{{ data.shift_id }}</a></div>
+        <div>{{ data.start_time }}, {{ data.organization.name }}, {{ data.site.name }} {{ data.state }}</div>
+        <table>
+            <tr>
+                <td>ID смены (задания)</td>
+                <td>
+                    {% if data.shift_id %}
+                        <a href="#">{{ data.shift_id }}</a>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Внешний ID смены</td>
+                <td>
+                    {% if data.common_id %}
+                        {{ data.common_id }}
+                    {% endif %}
+                </td>
+                    
+            </tr>
+            <tr>
+                <td>ID заявки</td>
+                <td>
+                    {% if data.batch_id %}
+                        {{ data.batch_id }}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Тип поставщика</td>
+                <td>
+                    {% if data.provider_id %}
+                        {{ data.provider_id }}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Сторонний ID</td>
+                <td>
+                    {% if data.external_id %}
+                        {{ data.external_id }}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Дата и время начала план</td>
+                <td>
+                    {% if data.start_time %}
+                        {% date_format data.start_time %} {% time_format data.start_time %} ({% get_timezone data.start_time %})
+                    {% else %}
+                         —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Дата и время окончания план</td>
+                <td>
+                    {% if data.start_time %}
+                        {% date_diff data.start_time data.length as end_time %}
+                        {% date_format end_time %} {% time_format end_time %} ({% get_timezone data.start_time %})
+                    {% else %}
+                         —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Длительность смены план</td>
+                <td>
+                    {% if data.length %}
+                        {% if data.length < 60 %}
+                            {{ data.length }} минут
+                        {% else %}
+                            {% minutes_to_hours data.length %} часов
+                        {% endif %}
+                    {% else %}
+                         —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Перерыв план</td>
+                <td>
+                    {% if data.rest_length %}
+                        {% if data.rest_length < 60 %}
+                            {{ data.rest_length }} минут
+                        {% else %}
+                            {% minutes_to_hours data.rest_length %} час
+                        {% endif %}
+                    {% else %}
+                         —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Оплачиваемое время план</td>
+                <td>
+                    {% if data.length and data.rest_length %}
+                        {% minutes_diff data.length data.rest_length as paid_time %}
+                        {% if paid_time < 60 %}
+                            {{ paid_time }} минут
+                        {% else %}
+                            {% minutes_to_hours paid_time %} часов
+                        {% endif %}
+                    {% elif data.length %}
+                        {% if data.length < 60 %}
+                            {{ data.length }} минут
+                        {% else %}
+                            {% minutes_to_hours data.length %} часов
+                        {% endif %}
+                    {% else %}
+                         —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Диапазон времени работы</td>
+                <td>
+                    {% if data.start_time and data.length %}
+                        с {% date_format data.start_time %} {% time_format data.start_time %} ({% get_timezone data.start_time %}) до {% date_format end_time %} {% time_format end_time %} ({% get_timezone data.start_time %})
+                    {% else %}
+                         —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Аттрибуты</td>
+                <td>
+                    {% if data.attributes %}
+                        <ul>
+                            {% for atr in data.attributes %}
+                                <li>
+                                    {% split_item atr as atr %}
+                                    {{ atr.0 }}.....{{ atr.1 }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Требование к исполнителям</td>
+                <td>
+                    {% if data.worker_requirements %}
+                        <ul>
+                            {% for req in data.worker_requirements %}
+                                <li>
+                                    {% split_item req as requirement %}
+                                    {{ requirement.0 }}.....{{ requirement.1 }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+        <h3>Профессия</h3>
+        <table>
+            <tr>
+                <td>ID профессии</td>
+                <td>
+                    {% if data.profession.id %}
+                        <a href="#">{{ data.profession.id }}</a>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Профессия</td>
+                <td>
+                    {% if data.profession.name %}
+                        {{ data.profession.name }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Описание</td>
+                <td>
+                    {% if data.profession.work_description %}
+                        {{ data.profession.work_description }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Теги</td>
+                <td>
+                    {% if data.tags %}
+                        {% text_join data.tags %}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Обучение</td>
+                <td>
+                    {% if data.profession.is_training %}
+                        {{ data.profession.is_training }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Ограничение по полу</td>
+                <td>
+                    {% if data.profession.gender_only %}
+                        {{ data.profession.gender_only }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+        <h3>Торговая точка</h3>
+        <table>
+            <tr>
+                <td>Организация</td>
+                <td>
+                    {% if data.organization.name %}
+                        {{ data.organization.name }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>ID Организации</td>
+                <td>
+                    {% if data.organization.id %}
+                        <a href="#">{{ data.organization.id }}</a>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Адрес ТТ</td>
+                <td>
+                    {% full_address data.address.country data.address.city data.address.street as address %}
+                    {% if address %}
+                        {{ address }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>ID ТТ</td>
+                <td>
+                    {% if data.site.id %}
+                        <a href="#">{{ data.site.id }}</a>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Название ТТ</td>
+                <td>
+                    {% if data.site.name %}
+                        {{ data.site.name }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Внутреннее название ТТ</td>
+                <td>
+                    {% if data.site.internal_name %}
+                        {{ data.site.internal_name }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Контактное лицо</td>
+                <td>
+                    {% if data.contact_person.name %}
+                        {{ data.contact_person.name }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Телефон</td>
+                <td>***************</td>
+            </tr>
+        </table>
+        <h3>Финансы</h3>
+        <table>
+            <tr>
+                <td>ID тарифа</td>
+                <td>
+                    {% if data.payment.id %}
+                        <a href="#">{{ data.payment.id }}</a>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Тариф</td>
+                <td>
+                    {% if data.payment.name %}
+                        {{ data.payment.name }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Описание тарифа</td>
+                <td>
+                    {% if data.payment.payment_per_hour %}
+                        {% unit_to_hundred data.payment.payment_per_hour %} р/ч
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Стоимость за 1 час</td>
+                <td>
+                    {% if data.payment.payment_per_hour %}
+                        {% unit_to_hundred data.payment.payment_per_hour %} ₽
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Стоимость за шт</td>
+                <td>
+                    {% if data.payment.payment_per_unit %}
+                        {% unit_to_hundred data.payment.payment_per_unit %} ₽
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Гарантия</td>
+                <td>
+                    {% if data.payment.guarantee %}
+                        {% unit_to_hundred data.payment.guarantee %} ₽
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Субсидия</td>
+                <td>
+                    {% if data.payment.subsidy %}
+                        {% unit_to_hundred data.payment.subsidy %} ₽
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Надбавка</td>
+                <td>
+                    {% if data.payment.approximate_units_per_hour %}
+                        {% unit_to_hundred data.payment.approximate_units_per_hour %} ₽
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Тип оплаты</td>
+                <td>
+                    {% if data.payment.payment_type %}
+                        {{ data.payment.payment_type }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Общая плановая сумма</td>
+                <td>
+                    {% if data.payment.total_approximate %}
+                        {% unit_to_hundred data.payment.total_approximate %} ₽
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="second-container">
+        {% if data.worker.id %}
+            <table>
+                <tr>
+                    <td>ID Исполнителя</td>
+                    <td><a href="#">{{ data.worker.id }}</a></td>
+                </tr>
+                <tr>
+                    <td>ФИО Исполнителя</td>
+                    <td>
+                        {% if data.worker.full_name %}
+                            {{ data.worker.full_name }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Телефон</td>
+                    <td>***************</td>
+                </tr>
+                <tr>
+                    <td>ИНН</td>
+                    <td>***************</td>
+                </tr>
+                <tr>
+                    <td>Снилс</td>
+                    <td>***************</td>
+                </tr>
+                <tr>
+                    <td>Рейтинг</td>
+                    <td>
+                        {% if data.worker.rating %}
+                            {{ data.worker.rating }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Статус в ТТ</td>
+                    <td>
+                        {% if data.liked %}
+                            Лайкнут в ТТ
+                        {% elif data.blacklisted %}
+                            Заблочен в ТТ
+                        {% else %}
+                            Нейтральный
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Код начала смены</td>
+                    <td>
+                        {% if data.worker.codes %}
+                            {% get_last_item data.worker.codes as item %}
+                            {{ item.code }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Check-In</td>
+                    <td>
+                        {% if data.worker.checkin %}
+                            {{ data.worker.checkin }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Check-Out</td>
+                    <td>
+                        {% if data.worker.checkout %}
+                            {{ data.worker.checkout }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        {% else %}
+            <div>Назначить исполнителя</div>
+        {% endif %}
+        <table>
+            <tr>
+                <td>Дата и время начала факт</td>
+                <td>
+                    {% if data.real_start_time %}
+                        {% date_format data.real_start_time %} {% time_format data.real_start_time %} ({% get_timezone data.real_start_time %})
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Дата и время окончания факт</td>
+                <td>
+                    {% if data.real_start_time %}
+                        {% date_diff data.real_start_time data.total_length_fact as end_time_fact %}
+                        {% date_format end_time_fact %} {% time_format end_time_fact %} ({% get_timezone data.real_start_time %})
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Длительность смены факт</td>
+                <td>
+                    {% if data.real_start_time %}
+                        {% minutes_to_hours data.total_length_fact %} часов
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Перерыв факт</td>
+                <td>
+                    {% if data.total_rest_length_fact %}
+                        {% if data.total_rest_length_fact < 60 %}
+                            {{ data.total_rest_length_fact }} минут
+                        {% else %}
+                            {% minutes_to_hours data.total_rest_length_fact %} час
+                        {% endif %}
+                    {% else %}
+                         —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Оплачиваемое время факт</td>
+                <td>
+                    {% if data.total_length_fact and data.total_rest_length_fact %}
+                        {% minutes_diff data.total_length_fact data.total_rest_length_fact as paid_time %}
+                        {% if paid_time < 60 %}
+                            {{ paid_time }} минут
+                        {% else %}
+                            {% minutes_to_hours paid_time %} часов
+                        {% endif %}
+                    {% elif data.total_length_fact %}
+                        {% if data.total_length_fact < 60 %}
+                            {{ data.total_length_fact }} минут
+                        {% else %}
+                            {% minutes_to_hours data.total_length_fact %} часов
+                        {% endif %}
+                    {% else %}
+                         —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Количество отработанных единиц факт</td>
+                <td>
+                    {% if data.total_units_fact %}
+                        {% minutes_to_hours data.total_units_fact %} ₽
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Стоимость смены факт</td>
+                <td>
+                    {% if data.total_payment_fact %}
+                        {% unit_to_hundred data.total_payment_fact %} ₽
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+{% endblock %}
