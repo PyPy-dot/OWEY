@@ -4,7 +4,7 @@ from django.shortcuts import render, HttpResponseRedirect
 from django.views.generic import ListView, DetailView
 
 from apps.services.models import Token
-from apps.shift.service import BlueCollarsAdminClient, AsyncBlueCollarsAdminClient
+from apps.bluecollars.service import BlueCollarsAdminClient, AsyncBlueCollarsAdminClient
 import csv
 
 # Create your views here.

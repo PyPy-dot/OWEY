@@ -29,7 +29,7 @@ urlpatterns = [
         'current_dir': None,
     }), name='home'),
     path('dir/', include('apps.data_engine.urls'), name='dir'),
-    path('shifts/', include('apps.shift.urls'), name='home'),
+    path('shifts/', include('apps.bluecollars.urls'), name='home'),
     path('chat/', include('apps.chatterbox.urls'), name='chat'),
 ]
 

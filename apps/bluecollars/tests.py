@@ -1,5 +1,5 @@
 from django.test import TestCase
-from apps.shift.service import AsyncBlueCollarsAdminClient
+from apps.bluecollars.service import AsyncBlueCollarsAdminClient
 import csv
 
 # Create your tests here.

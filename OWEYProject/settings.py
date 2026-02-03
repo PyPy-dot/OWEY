@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'mptt',
     'django_mptt_admin',
 
-    'apps.shift.apps.ShiftConfig',
+    'apps.bluecollars.apps.ShiftConfig',
     'apps.data_engine.apps.DataEngineConfig',
     'apps.chatterbox.apps.ChatterboxConfig',
     'apps.services.apps.ServiceConfig',
