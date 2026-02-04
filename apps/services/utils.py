@@ -1,13 +1,10 @@
-from datetime import datetime, timedelta
+import json
 from aiohttp import ClientSession
 from requests import Session
 from typing import Optional, Any
-import re
-import json
-import asyncio
-from apps.services.models import Cookie, Token
+from urllib.parse import urlparse
 
-from django.conf import settings
+from apps.services.models import Token
 from django.utils import timezone
 
 
@@ -60,49 +57,11 @@ class BaseClient:
             'passport': {
                 'auth': ('https://passport.yandex-team.ru/auth', 'POST'),
                 'update': ('https://passport.yandex-team.ru/auth/update', 'GET')
+            },
+            'hosts': {
+                'chatterbox': ''
             }
         }
-
-    @staticmethod
-    def _read_json_file(file_name: str) -> dict:
-        """
-        Reads a JSON file and returns its content as a dictionary
-
-        Args:
-            file_name: The name of the JSON file to read
-
-        Returns:
-            A dictionary containing the JSON data.
-        """
-        with open(f'apps/services/network/{file_name}.json', 'r', encoding='utf-8') as file:
-            headers = dict(json.load(file))
-        return headers
-
-    def _save_json(self, file_name: str) -> None:
-        """
-        Saves the current object's attributes to a JSON file
-
-        Args:
-            file_name: The name of the JSON file to save to.
-        """
-        with open(f'apps/services/network/{file_name}.json', 'w', encoding='utf-8') as file:
-            json.dump(self.__dict__[file_name], file, ensure_ascii=False, indent=4)
-
-    @staticmethod
-    def fresh_session(session_id: str) -> bool:
-        """
-        Checks if a session is still valid based on its ID
-
-        Args:
-            session_id: The ID of the session to check
-
-        Returns:
-            True if the session is valid, False otherwise, or None if the session ID is invalid.
-        """
-        if isinstance(session_id, str):
-            match = re.search(r'^(\d):(\d+)\.', session_id)
-            days, date = int(match.group(1)), int(match.group(2))
-            return datetime.now() - datetime.fromtimestamp(date) < timedelta(days=days)
 
     def _parse_search_params(self) -> str:
         params = self.search_params.__dict__
@@ -130,7 +89,6 @@ class AsyncClient(BaseClient):
     """
     Asynchronous client for making requests.
     """
-    gather = asyncio.gather
 
     async def __aenter__(self):
         """
@@ -164,7 +122,6 @@ class AsyncClient(BaseClient):
         if self._session is None:
             raise RuntimeError('Session is not initialized. Call auth() first.')
         async with self._session.request(method, url, **kwargs) as resp:
-            await Cookie.asave_cookie(self._session.cookie_jar, url)
             if resp.status == 200:
                 meta = await resp.json()
                 return meta
@@ -178,19 +135,13 @@ class AsyncClient(BaseClient):
         """
         if not self.is_active:
             url, method = self.urls['passport']['auth']
-            cookie = await Cookie.aread_cookie()
             headers = {'User-Agent': self.user_agent, 'Host': 'passport.yandex-team.ru'}
-            session_id = cookie._cookies.get('Session_id')
-            if all([session_id, self.fresh_session(session_id)]):
-                self._session = ClientSession(headers=headers, cookies=cookie)
-            else:
-                self._session = ClientSession(headers=headers)
-                async with self._session.request(method, url, data=self.data) as resp:
-                    await Cookie.asave_cookie(self._session.cookie_jar, url)
-                    if resp.status == 200:
-                        print('Auth:', resp.status)
-                    else:
-                        print('Auth failed', resp.status)
+            self._session = ClientSession(headers=headers)
+            async with self._session.request(method, url, data=self.data) as resp:
+                if resp.status == 200:
+                    print('Auth:', resp.status)
+                else:
+                    print('Auth failed', resp.status)
             self._session.headers.pop('Host', None)
             self._session.headers['X-Csrf-Token'] = await self._take_csrf_token()
         else:
@@ -211,8 +162,8 @@ class AsyncClient(BaseClient):
                 raise Token.TokenExpiredError
         except (Token.DoesNotExist, Token.TokenExpiredError):
             url, method = self.urls['csrf-token'][self.service]
+            self._session.headers['Host'] = urlparse(url).hostname
             async with self._session.request(method, url) as resp:
-                await Cookie.asave_cookie(self._session.cookie_jar, url)
                 if resp.status == 200:
                     resp_token = await resp.json()
                     print('Request to csrf-token success', self.service)
@@ -292,7 +243,6 @@ class Client(BaseClient):
         if self._session is None:
             raise RuntimeError('Session is not initialized. Call auth() first.')
         resp = self._session.request(method, url, **kwargs)
-        Cookie.save_cookie(self._session.cookies, url)
         if resp.status_code == 200:
             meta = resp.json()
             return meta
@@ -309,22 +259,13 @@ class Client(BaseClient):
         """
         if not self.is_active:
             url, method = self.urls['passport']['auth']
-            cookie = Cookie.read_cookie()
-            try:
-                session_id = list(filter(lambda c: c.name == 'Session_id', cookie))[0].value
-            except IndexError:
-                session_id = None
             self._session = Session()
-            self._session.headers.update({'User-Agent': self.user_agent, 'Host': 'passport.yandex-team.ru'})
-            if all([session_id, self.fresh_session(session_id)]):
-                self._session.cookies.update(cookie)
+            self._session.headers.update({'User-Agent': self.user_agent, 'Host': urlparse(url).hostname})
+            resp = self._session.request(method, url, data=self.data)
+            if resp.status_code == 200:
+                print('Auth:', resp.status_code)
             else:
-                resp = self._session.request(method, url, data=self.data)
-                Cookie.save_cookie(self._session.cookies, url)
-                if resp.status_code == 200:
-                    print('Auth:', resp.status_code)
-                else:
-                    raise AuthenticationError
+                raise AuthenticationError
             self._session.headers.pop('Host', None)
             self._session.headers['X-Csrf-Token'] = self._take_csrf_token()
         else:
@@ -349,8 +290,8 @@ class Client(BaseClient):
                 raise Token.TokenExpiredError
         except (Token.DoesNotExist, Token.TokenExpiredError):
             url, method = self.urls['csrf-token'][self.service]
+            self._session.headers['Host'] = urlparse(url).hostname
             resp = self._session.request(method, url)
-            Cookie.save_cookie(self._session.cookies, url)
             if resp.status_code == 200:
                 resp_token = resp.json().get('csrf_token')
                 Token.save_token(resp_token, self.service)
