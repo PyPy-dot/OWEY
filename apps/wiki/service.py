@@ -13,7 +13,7 @@ class WikiClient(Client):
             ehs: int | None = None,
             per_page: int | None = None,
             layers: str = 'all'
-    ) -> dict:
+    ) -> list:
         params = {'text': text, 'version': version, 'layers': layers}
         if lang is not None:
             params['lang'] = lang
@@ -23,4 +23,27 @@ class WikiClient(Client):
             params['feature.enable_highlight_suggest'] = ehs
         if per_page is not None:
             params['all.per_page'] = per_page
-        return dict(self.request('', 'GET', params=params))['all']['result']
+        return dict(self.request(self.get_url('get_search_result'), 'GET', params=params))['all']['result']
+
+
+class AsyncWikiClient(AsyncClient):
+    async def get_search_result(
+            self,
+            text: str,
+            version: int = 2,
+            lang: str | None = None,
+            scope: str | None = None,
+            ehs: int | None = None,
+            per_page: int | None = None,
+            layers: str = 'all'
+    ) -> list:
+        params = {'text': text, 'version': version, 'layers': layers}
+        if lang is not None:
+            params['lang'] = lang
+        if scope is not None:
+            params['scope'] = scope
+        if ehs is not None:
+            params['feature.enable_highlight_suggest'] = ehs
+        if per_page is not None:
+            params['all.per_page'] = per_page
+        return dict(await self.request(self.get_url('get_search_result'), 'GET', params=params))['all']['result']
