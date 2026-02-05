@@ -4,7 +4,6 @@ from requests import Session
 from typing import Optional, Any
 from urllib.parse import urlparse
 
-from apps.services.models import Token
 from django.utils import timezone
 
 
@@ -53,6 +52,7 @@ class BaseClient:
             'csrf-token': {
                 'chatterbox': ('https://supchat.taxi.yandex-team.ru/chatterbox-api/me/', 'POST'),
                 'bc_admin': ('https://admin-external.smena.yandex-team.ru/api/admin/me', 'GET'),
+                'wiki': None
             },
             'passport': {
                 'auth': ('https://passport.yandex-team.ru/auth', 'POST'),
@@ -154,23 +154,15 @@ class AsyncClient(BaseClient):
         Returns:
             The CSRF token.
         """
-        try:
-            token = await Token.aread_token(self.service)
-            if timezone.now() < token['expires']:
-                return token['value']
+        url, method = self.urls['csrf-token'][self.service]
+        self._session.headers['Host'] = urlparse(url).hostname
+        async with self._session.request(method, url) as resp:
+            if resp.status == 200:
+                resp_token = await resp.json()
+                print('Request to csrf-token success', self.service)
+                return resp_token.get('csrf_token')
             else:
-                raise Token.TokenExpiredError
-        except (Token.DoesNotExist, Token.TokenExpiredError):
-            url, method = self.urls['csrf-token'][self.service]
-            self._session.headers['Host'] = urlparse(url).hostname
-            async with self._session.request(method, url) as resp:
-                if resp.status == 200:
-                    resp_token = await resp.json()
-                    print('Request to csrf-token success', self.service)
-                    await Token.asave_token(resp_token.get('csrf_token'), self.service)
-                    return resp_token.get('csrf_token')
-                else:
-                    raise CSRFResponseError(f'CSRF token from service {self.service} not valid')
+                raise CSRFResponseError(f'CSRF token from service {self.service} not valid')
 
     async def close(self) -> None:
         """
@@ -282,23 +274,15 @@ class Client(BaseClient):
             CSRFResponseError: If the request to csrf-token generator fails.
             Token.TokenExpiredError: If the token is expired.
         """
-        try:
-            token = Token.read_token(self.service)
-            if timezone.now() < token['expires']:
-                return token['value']
-            else:
-                raise Token.TokenExpiredError
-        except (Token.DoesNotExist, Token.TokenExpiredError):
-            url, method = self.urls['csrf-token'][self.service]
-            self._session.headers['Host'] = urlparse(url).hostname
-            resp = self._session.request(method, url)
-            if resp.status_code == 200:
-                resp_token = resp.json().get('csrf_token')
-                Token.save_token(resp_token, self.service)
-                print('Request to csrf-token success', self.service)
-                return resp_token
-            else:
-                raise CSRFResponseError(f'Request to CSRF token from service {self.service} fails')
+        url, method = self.urls['csrf-token'][self.service]
+        self._session.headers['Host'] = urlparse(url).hostname
+        resp = self._session.request(method, url)
+        if resp.status_code == 200:
+            resp_token = resp.json().get('csrf_token')
+            print('Request to csrf-token success', self.service)
+            return resp_token
+        else:
+            raise CSRFResponseError(f'Request to CSRF token from service {self.service} fails')
 
     def close(self):
         """

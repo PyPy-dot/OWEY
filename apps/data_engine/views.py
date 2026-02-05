@@ -14,3 +14,7 @@ def cascade_folders(request, slug):
         'current_dir': current_dir,
         'full_path': full_path
     })
+
+
+def engine_view(request, dataset_id: str):
+    return render(request, 'data_engine/engine_page.html', {})

@@ -29,3 +29,9 @@ class Directory(MPTTModel):
 
     def get_absolute_url(self):
         return reverse('directory', kwargs={'slug': self.slug})
+
+
+# class Dataset(models.Model):
+#     name = models.CharField(max_length=255)
+#     dataset_id = models.CharField(max_length=255, unique=True)
+#     parent = TreeForeignKey()

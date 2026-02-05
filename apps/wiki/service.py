@@ -3,7 +3,11 @@ from abc import ABC
 from dataclasses import dataclass, field
 
 
-class WikiClient(Client):
+class BaseWiki(ABC):
+    service: str = 'wiki'
+
+
+class WikiClient(BaseWiki, Client):
     def get_search_result(
             self,
             text: str,
@@ -26,7 +30,7 @@ class WikiClient(Client):
         return dict(self.request(self.get_url('get_search_result'), 'GET', params=params))['all']['result']
 
 
-class AsyncWikiClient(AsyncClient):
+class AsyncWikiClient(BaseWiki, AsyncClient):
     async def get_search_result(
             self,
             text: str,

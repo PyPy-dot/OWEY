@@ -1,11 +1,9 @@
 import asyncio
-
+import csv
 from django.shortcuts import render, HttpResponseRedirect
 from django.views.generic import ListView, DetailView
-
-from apps.services.models import Token
 from apps.bluecollars.service import BlueCollarsAdminClient, AsyncBlueCollarsAdminClient
-import csv
+
 
 # Create your views here.
 client = BlueCollarsAdminClient()
@@ -21,8 +19,6 @@ client.auth()
 
 
 def shift_detail(request, shift_id):
-    try:
-        data = client.get_shift(shift_id)
-        return render(request, 'shift/detail.html', {'title': f'Смена: {shift_id}', 'data': data})
-    except Token.TokenInvalidError:
-        return HttpResponseRedirect('/')
+    data = client.get_shift(shift_id)
+    return render(request, 'shift/detail.html', {'title': f'Смена: {shift_id}', 'data': data})
+

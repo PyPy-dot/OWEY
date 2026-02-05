@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'apps.data_engine.apps.DataEngineConfig',
     'apps.chatterbox.apps.ChatterboxConfig',
     'apps.services.apps.ServiceConfig',
+    'apps.wiki.apps.WikiConfig',
 ]
 
 MIDDLEWARE = [
@@ -115,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = timezone.get_fixed_timezone(timezone.timedelta(hours=5))  # 'Asia/Yekaterinburg'
+TIME_ZONE = 'Asia/Yekaterinburg' #
 
 USE_I18N = True
 
