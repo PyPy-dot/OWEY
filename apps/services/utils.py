@@ -4,8 +4,6 @@ from requests import Session
 from typing import Optional, Any
 from urllib.parse import urlparse
 
-from django.utils import timezone
-
 
 class AuthenticationError(Exception):
     """
@@ -58,9 +56,6 @@ class BaseClient:
                 'auth': ('https://passport.yandex-team.ru/auth', 'POST'),
                 'update': ('https://passport.yandex-team.ru/auth/update', 'GET')
             },
-            'hosts': {
-                'chatterbox': ''
-            }
         }
 
     def _parse_search_params(self) -> str:
@@ -135,7 +130,7 @@ class AsyncClient(BaseClient):
         """
         if not self.is_active:
             url, method = self.urls['passport']['auth']
-            headers = {'User-Agent': self.user_agent, 'Host': 'passport.yandex-team.ru'}
+            headers = {'User-Agent': self.user_agent, 'Host': urlparse(url).hostname}
             self._session = ClientSession(headers=headers)
             async with self._session.request(method, url, data=self.data) as resp:
                 if resp.status == 200:

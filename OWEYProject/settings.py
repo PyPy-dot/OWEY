@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 from django.utils import timezone
+from apps.bluecollars.service import BlueCollarsAdminClient, AsyncBlueCollarsAdminClient
+from apps.chatterbox.service import ChatterboxClient, AsyncChatterboxClient
+from apps.wiki.service import WikiClient, AsyncWikiClient
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -141,3 +144,17 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+API_SESSIONS = {
+    'sync': {
+        'chatterbox': ChatterboxClient(),
+        'bluecollars': BlueCollarsAdminClient(),
+        'wiki': WikiClient(),
+    },
+    'async': {
+        'chatterbox': AsyncChatterboxClient(),
+        'bluecollars': AsyncBlueCollarsAdminClient(),
+        'wiki': AsyncWikiClient(),
+    }
+}

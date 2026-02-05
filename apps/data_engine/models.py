@@ -31,7 +31,7 @@ class Directory(MPTTModel):
         return reverse('directory', kwargs={'slug': self.slug})
 
 
-# class Dataset(models.Model):
-#     name = models.CharField(max_length=255)
-#     dataset_id = models.CharField(max_length=255, unique=True)
-#     parent = TreeForeignKey()
+class Dataset(models.Model):
+    name = models.CharField(max_length=255)
+    dataset_id = models.CharField(max_length=255, unique=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')

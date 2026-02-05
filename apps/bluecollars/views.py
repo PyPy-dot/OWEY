@@ -2,20 +2,11 @@ import asyncio
 import csv
 from django.shortcuts import render, HttpResponseRedirect
 from django.views.generic import ListView, DetailView
-from apps.bluecollars.service import BlueCollarsAdminClient, AsyncBlueCollarsAdminClient
+from django.conf import settings
 
 
 # Create your views here.
-client = BlueCollarsAdminClient()
-client.auth()
-
-
-# async def main():
-#     async with AsyncBlueCollarsAdminClient() as async_client:
-#         data = await async_client.get_shift('e916de80-65fa-4e66-a3a9-504385a022fd')
-#     print(data)
-#
-# asyncio.run(main())
+client = settings.API_SESSIONS['sync']['bluecollars'].auth()
 
 
 def shift_detail(request, shift_id):
